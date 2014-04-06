@@ -3,7 +3,8 @@
 
 var	http		= require("http"),
 	url			= require("url"),
-	nconf		= require("nconf");
+	nconf		= require("nconf"),
+	Sequelize	= require("sequelize");
 
 //
 // Configuration
@@ -16,11 +17,36 @@ nconf.defaults({
 	'http': {
 		'port': 8080
 	},
+	'sequelize' : {
+		'database'	: 'judgement',
+		'username'	: 'golergka',
+		'password'	: '',
+		'config'		: {
+			'host'				: '127.0.0.1',
+			'port'				: '5432',
+			'dialect'			: 'postgres',
+		}
+	}
 });
 
 //
 // Database
 //
+
+Sequelize.db = new Sequelize(
+		nconf.get('sequelize:database'),
+		nconf.get('sequelize:username'),
+		nconf.get('sequelize:password'),
+		nconf.get('sequelize:config')
+	)
+.authenticate()
+.complete(function(err) {
+	if (!!err) {
+		console.log('Unable to connect to the database: ' + err);
+	} else {
+		console.log('Establised database connection.');
+	}
+});
 
 function getQuestions(callback) {
 	// only temporary yet
