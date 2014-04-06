@@ -2,11 +2,43 @@
 "use strict";
 
 var	http		= require("http"),
-	url			= require("url");
+	url			= require("url"),
+	Bookshelf	= require("Bookshelf"),
+	nconf		= require("nconf");
 
-var port = process.argv[2] || 8080;
+//
+// Configuration
+//
+
+nconf.argv().env();
+
+nconf.file({ file: 'config.json' });
+nconf.defaults({
+	'http': {
+		'port': 8080
+	},
+	'bookshelf': {
+		client: 'pg',
+		// Default local testing configuration
+		// without any passwords, OBVIOUSLY
+		connection: {
+			host		: '127.0.0.1',
+			user		: 'golergka',
+			password	: '',
+			database	: 'judgement',
+			charset		: 'utf8'
+		}
+	}
+});
+
+//
+// Database
+//
+
+Bookshelf.pg = Bookshelf.initialize(nconf.get('bookshelf'));
 
 function getQuestions(callback) {
+	// only temporary yet
 	var questions = [
 		{
 			id: 1,
@@ -21,6 +53,10 @@ function getQuestions(callback) {
 	];
 	callback(questions);
 }
+
+//
+// Starting server
+//
 
 var server = http.createServer(function(req,res) {
 	var u = url.parse(req.url, true);
@@ -38,5 +74,5 @@ var server = http.createServer(function(req,res) {
 		res.end(JSON.stringify(result));
 	}
 });
-server.listen(port);
-console.log("Listening on port " + port);
+server.listen(nconf.get('http:port'));
+console.log("Listening on port " + nconf.get('http:port'));
