@@ -3,7 +3,6 @@
 
 var	http		= require("http"),
 	url			= require("url"),
-	Bookshelf	= require("Bookshelf"),
 	nconf		= require("nconf");
 
 //
@@ -17,25 +16,11 @@ nconf.defaults({
 	'http': {
 		'port': 8080
 	},
-	'bookshelf': {
-		client: 'pg',
-		// Default local testing configuration
-		// without any passwords, OBVIOUSLY
-		connection: {
-			host		: '127.0.0.1',
-			user		: 'golergka',
-			password	: '',
-			database	: 'judgement',
-			charset		: 'utf8'
-		}
-	}
 });
 
 //
 // Database
 //
-
-Bookshelf.pg = Bookshelf.initialize(nconf.get('bookshelf'));
 
 function getQuestions(callback) {
 	// only temporary yet
