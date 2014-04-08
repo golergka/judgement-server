@@ -34,8 +34,6 @@ nconf.defaults({
 //
 // Database
 //
-GLOBAL.s = Sequelize;
-
 Sequelize.db = new Sequelize(
 	nconf.get('sequelize:database'),
 	nconf.get('sequelize:username'),
