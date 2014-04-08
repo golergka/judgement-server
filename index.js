@@ -34,6 +34,7 @@ nconf.defaults({
 //
 // Database
 //
+GLOBAL.s = Sequelize;
 
 Sequelize.db = new Sequelize(
 	nconf.get('sequelize:database'),
@@ -92,7 +93,10 @@ Request.prototype.getParameter = function getParameter(paramName) {
 	var result = Q.defer();
 	var param = this.params[paramName];
 	if (!param) {
-		result.reject(new Error(paramName + ' parameter required'));
+		throw {
+			error: paramName + ' parameter required',
+			errorCode: 1
+		};
 	} else {
 		result.resolve(param);
 	}
@@ -116,7 +120,10 @@ Request.prototype.validateSignature = function(publicKey) {
 	}
 
 	if (!signature) {
-		result.reject('No signature found!');
+		result.reject({
+			error: 'No signature found!',
+			errorCode: 1
+		});
 	} else {
 		checkParams.sort();
 		for(var i = 0; i < checkParams.length; i++) {
@@ -126,7 +133,10 @@ Request.prototype.validateSignature = function(publicKey) {
 		if (ursaPublicKey.hashAndVerify('sha256',message,signature,'utf-8')) {
 			result.resolve();
 		} else {
-			result.reject("Signature doesn't match");
+			result.reject({
+				error: "Signature doesn't match",
+				errorCode: 2
+			});
 		}
 	}
 
@@ -158,7 +168,14 @@ Request.prototype.loginUser = function() {
 			}
 		})
 		.then(function(user){
-			return this.validateSignature(user.publicKey);
+			if (!!user) {
+				return this.validateSignature(user.publicKey);
+			} else {
+				throw {
+					error: "Can't find user",
+					errorCode: 3
+				};
+			}
 		});
 	});
 };
@@ -179,8 +196,12 @@ Request.prototype.reply = function(reply, code) {
 	this.res.end(JSON.stringify(reply));
 };
 
+Request.prototype.replyOK = function(reply) {
+	this.reply({ content: reply, errorCode: 0 }, 200);
+};
+
 Request.prototype.replyError = function(error) {
-	this.reply(this.res,{ error: error },400);
+	this.reply(error,400);
 };
 
 Request.prototype.process = function() {
@@ -195,23 +216,27 @@ Request.prototype.process = function() {
 				.then(function(method) {
 					switch(method) {
 						case 'getQuestions':
-							console.log('loading questions');
 							return Sequelize.db.question.findAll()
 							.then(function(questions) {
-								console.log('loaded questions: ');
 								console.log(questions);
-								that.reply(questions, 200);
+								that.replyOK(questions);
 							});
 
 						default:
-							throw 'Unknown method ' + method;
+							throw {
+								error: 'Unknown method ' + method,
+								errorCode: 4
+							};
 					}
 				});
 			case '/secure':
 				return that.request.validate()
 				.then(that.getParameter('method'));
 			default:
-				throw 'Unknown path ' + that.path;
+				throw {
+					error: 'Unknown path ' + that.path,
+					errorCode: 5
+				};
 		}
 	})()
 	.fail(this.replyError);
