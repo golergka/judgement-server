@@ -68,10 +68,10 @@ Sequelize.db.question = Sequelize.db.define('Question', {
 // Syncing db
 
 Sequelize.db
-	.sync({ force: true })
+	.sync()
 	.complete(function(err) {
 		if (!!err) {
-			console.log('Error while synching schemas: ' + err);
+			console.log("Couldn't sync schemas: " + err);
 		} else {
 			console.log('Database schemas synced');
 		}
@@ -205,7 +205,6 @@ Request.prototype.replyError = function(error) {
 Request.prototype.process = function() {
 	console.log('processing request: ' + this.path);
 	console.log('parameters:');
-	console.log(this.params);
 	var that = this;
 	(function(){
 		switch(that.path) {
@@ -215,10 +214,7 @@ Request.prototype.process = function() {
 					switch(method) {
 						case 'getQuestions':
 							return Sequelize.db.question.findAll()
-							.then(function(questions) {
-								console.log(questions);
-								that.replyOK(questions);
-							});
+							.then(that.replyOK);
 
 						default:
 							throw {
@@ -237,7 +233,7 @@ Request.prototype.process = function() {
 				};
 		}
 	})()
-	.fail(this.replyError);
+	.fail(that.replyError);
 };
 
 var server = http.createServer(function(req,res) {
