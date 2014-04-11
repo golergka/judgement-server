@@ -5,7 +5,6 @@ var	http		= require("http"),
 	url			= require("url"),
 	nconf		= require("nconf"),
 	Sequelize	= require("sequelize"),
-	ursa		= require("ursa"),
 	Q			= require("q");
 
 //
@@ -91,18 +90,22 @@ Request.prototype.getParameter = function getParameter(paramName) {
 	var result = Q.defer();
 	var param = this.params[paramName];
 	if (!param) {
-		throw {
+		result.reject({
 			error: paramName + ' parameter required',
 			errorCode: 1
-		};
+		});
 	} else {
 		result.resolve(param);
 	}
 	return result.promise;
 };
 
-Request.prototype.validateSignature = function(publicKey) {
+Request.prototype.validateSignature = function() {
+	// function(publicKey) {
 	var result = Q.defer();
+	Q.resolve();
+	// TODO actually implement signagure
+	/*
 	var checkParams = [];
 	var signature;
 	var message = "";
@@ -137,6 +140,7 @@ Request.prototype.validateSignature = function(publicKey) {
 			});
 		}
 	}
+	*/
 
 	return result;
 };
@@ -156,7 +160,7 @@ Request.prototype.registerUser = function() {
 	});
 };
 
-Request.prototype.loginUser = function() {
+Request.prototype.getExistingUser = function() {
 	return this.getParameter('vendor_id_hash')
 	.then(function(vendorIdHash){
 		return Sequelize.db.user.find({
@@ -167,29 +171,30 @@ Request.prototype.loginUser = function() {
 		})
 		.then(function(user){
 			if (!!user) {
-				return this.validateSignature(user.publicKey);
+				return user;
 			} else {
-				throw {
+				return Q.defer().reject({
 					error: "Can't find user",
 					errorCode: 3
-				};
+				}).promise();
 			}
 		});
 	});
 };
 
-Request.prototype.validate = function() {
+Request.prototype.getUser = function() {
 	return this.getParameter('method')
 	.then(function(method) {
 		if (method === 'register') {
 			return this.registerUser();
 		} else {
-			return this.loginUser();
+			return this.getExistingUser();
 		}
 	});
 };
 
 Request.prototype.reply = function(reply, code) {
+	console.log('replying: ' + reply);
 	this.res.writeHead(code, { 'Content-Type': 'application/json' });
 	this.res.end(JSON.stringify(reply));
 };
@@ -206,34 +211,29 @@ Request.prototype.process = function() {
 	console.log('processing request: ' + this.path);
 	console.log('parameters:');
 	var that = this;
-	(function(){
-		switch(that.path) {
-			case '/public':
-				return that.getParameter('method')
-				.then(function(method) {
-					switch(method) {
-						case 'getQuestions':
-							return Sequelize.db.question.findAll()
-							.then(that.replyOK);
+	return that.getParameter('method')
+	.then(function(method) {
+		switch(method) {
+			case 'getQuestions':
+				return Sequelize.db.question.findAll();
 
-						default:
-							throw {
-								error: 'Unknown method ' + method,
-								errorCode: 4
-							};
-					}
-				});
-			case '/secure':
-				return that.request.validate()
-				.then(that.getParameter('method'));
+			case 'register':
+				return that.register();
+
 			default:
-				throw {
-					error: 'Unknown path ' + that.path,
-					errorCode: 5
-				};
+				console.log('Unknown method' + method);
+				return Q.defer().reject({
+					error: 'Unknown method ' + method,
+					errorCode: 4
+				}).promise();
 		}
-	})()
-	.fail(that.replyError);
+	})
+	.then(function(reply) {
+		that.replyOK(reply);
+	})
+	.fail(function(error) {
+		that.replyError(error);
+	});
 };
 
 var server = http.createServer(function(req,res) {
