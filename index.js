@@ -52,9 +52,7 @@ Sequelize.db
 // Users
 
 var User = Sequelize.db.define('User', {
-	vendorIdHash:	Sequelize.STRING,
-	loginMethod:	Sequelize.ENUM('iOSVendorId'),
-	publicKey:		Sequelize.STRING
+	vendorIdHash:	Sequelize.STRING
 });
 
 // Questions
@@ -115,75 +113,31 @@ Request.prototype.getParameter = function getParameter(paramName) {
 };
 
 Request.prototype.validateSignature = function() {
-	// function(publicKey) {
+	// TODO actually check something
 	var result = Q.defer();
 	Q.resolve();
-	// TODO actually implement signagure
-	/*
-	var checkParams = [];
-	var signature;
-	var message = "";
-
-	for(var param in this.params) {
-		if (this.params.hasOwnKey(param)) {
-			if (param !== 'sig') {
-				checkParams.push(param);
-			} else {
-				signature = this.params[param];
-			}
-		}
-	}
-
-	if (!signature) {
-		result.reject({
-			error: 'No signature found!',
-			errorCode: 1
-		});
-	} else {
-		checkParams.sort();
-		for(var i = 0; i < checkParams.length; i++) {
-			message += checkParams[i] + '=' + this.params[checkParams[i]];
-		}
-		var ursaPublicKey = ursa.createPublicKey(publicKey, 'utf-8');
-		if (ursaPublicKey.hashAndVerify('sha256',message,signature,'utf-8')) {
-			result.resolve();
-		} else {
-			result.reject({
-				error: "Signature doesn't match",
-				errorCode: 2
-			});
-		}
-	}
-	*/
-
 	return result;
 };
 
 Request.prototype.registerUser = function() {
-	return this.getParameter('publicKey')
-	.then(function(publicKey) {
-		return this.validateSignature(publicKey)
-		.then(this.getParameter('vendorIdHash'))
+	return this.getParameter('vendorIdHash')
 		.then(function(vendorIdHash) {
 			return User.create({
-				vendorIdHash:	vendorIdHash,
-				loginMethod:	'iOSVendorId',
-				publicKey:		publicKey
+				vendorIdHash: vendorIdHash
 			});
 		});
-	});
 };
 
 Request.prototype.getExistingUser = function() {
 	return this.getParameter('vendorIdHash')
-	.then(function(vendorIdHash){
-		return User.find({
-			where: {
-				loginMethod: 'iOSVendorId',
-				vendorIdHash: vendorIdHash
-			}
+		.then(function(vendorIdHash){
+			return User.find({
+				where: {
+					vendorIdHash: vendorIdHash
+				}
+			});
 		})
-		.then(function(user){
+		.then(function(user) {
 			if (!!user) {
 				return user;
 			} else {
@@ -193,7 +147,6 @@ Request.prototype.getExistingUser = function() {
 				}).promise();
 			}
 		});
-	});
 };
 
 Request.prototype.getUser = function() {
