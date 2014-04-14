@@ -160,10 +160,10 @@ Request.prototype.validateSignature = function() {
 };
 
 Request.prototype.registerUser = function() {
-	return this.getParameter('public_key')
+	return this.getParameter('publicKey')
 	.then(function(publicKey) {
 		return this.validateSignature(publicKey)
-		.then(this.getParameter('vendor_id_hash'))
+		.then(this.getParameter('vendorIdHash'))
 		.then(function(vendorIdHash) {
 			return User.create({
 				vendorIdHash:	vendorIdHash,
@@ -175,7 +175,7 @@ Request.prototype.registerUser = function() {
 };
 
 Request.prototype.getExistingUser = function() {
-	return this.getParameter('vendor_id_hash')
+	return this.getParameter('vendorIdHash')
 	.then(function(vendorIdHash){
 		return User.find({
 			where: {
