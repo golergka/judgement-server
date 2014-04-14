@@ -64,10 +64,24 @@ Sequelize.db.question = Sequelize.db.define('Question', {
 	date: Sequelize.DATE
 });
 
+// Answer
+Sequelize.db.answer = Sequelize.db.define('Answer', {
+	value: Sequelize.BOOLEAN
+});
+Sequelize.db.answer.belongsTo(Sequelize.db.user);
+Sequelize.db.user.hasMany(Sequelize.db.answer);
+Sequelize.db.answer.belongsTo(Sequelize.db.question);
+
+// Test data
+Sequelize.db.question.create({
+	text: "Will I live to be 26?",
+	date: new Date(2014, 6, 10)
+});
+
 // Syncing db
 
 Sequelize.db
-	.sync()
+	.sync({force: true})
 	.complete(function(err) {
 		if (!!err) {
 			console.log("Couldn't sync schemas: " + err);
