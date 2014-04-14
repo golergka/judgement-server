@@ -51,7 +51,7 @@ Sequelize.db
 
 // Users
 
-Sequelize.db.user = Sequelize.db.define('User', {
+var User = Sequelize.db.define('User', {
 	vendorIdHash:	Sequelize.STRING,
 	loginMethod:	Sequelize.ENUM('iOSVendorId'),
 	publicKey:		Sequelize.STRING
@@ -59,21 +59,21 @@ Sequelize.db.user = Sequelize.db.define('User', {
 
 // Questions
 
-Sequelize.db.question = Sequelize.db.define('Question', {
+var Question = Sequelize.db.define('Question', {
 	text: Sequelize.STRING,
 	date: Sequelize.DATE
 });
 
 // Answer
-Sequelize.db.answer = Sequelize.db.define('Answer', {
+var Answer = Sequelize.db.define('Answer', {
 	value: Sequelize.BOOLEAN
 });
-Sequelize.db.answer.belongsTo(Sequelize.db.user);
-Sequelize.db.user.hasMany(Sequelize.db.answer);
-Sequelize.db.answer.belongsTo(Sequelize.db.question);
+Answer.belongsTo(User);
+User.hasMany(Answer);
+Answer.belongsTo(Question);
 
 // Test data
-Sequelize.db.question.create({
+Question.create({
 	text: "Will I live to be 26?",
 	date: new Date(2014, 6, 10)
 });
@@ -165,7 +165,7 @@ Request.prototype.registerUser = function() {
 		return this.validateSignature(publicKey)
 		.then(this.getParameter('vendor_id_hash'))
 		.then(function(vendorIdHash) {
-			return Sequelize.db.user.create({
+			return User.create({
 				vendorIdHash:	vendorIdHash,
 				loginMethod:	'iOSVendorId',
 				publicKey:		publicKey
@@ -177,7 +177,7 @@ Request.prototype.registerUser = function() {
 Request.prototype.getExistingUser = function() {
 	return this.getParameter('vendor_id_hash')
 	.then(function(vendorIdHash){
-		return Sequelize.db.user.find({
+		return User.find({
 			where: {
 				loginMethod: 'iOSVendorId',
 				vendorIdHash: vendorIdHash
@@ -229,7 +229,7 @@ Request.prototype.process = function() {
 	.then(function(method) {
 		switch(method) {
 			case 'getQuestions':
-				return Sequelize.db.question.findAll();
+				return Question.findAll();
 
 			case 'register':
 				return that.register();
