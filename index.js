@@ -141,10 +141,12 @@ Request.prototype.getExistingUser = function() {
 			if (!!user) {
 				return user;
 			} else {
-				return Q.defer().reject({
+				var result = Q.defer();
+				result.reject({
 					error: "Can't find user",
 					errorCode: 3
-				}).promise();
+				});
+				return result.promise;
 			}
 		});
 };
