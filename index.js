@@ -205,11 +205,12 @@ Request.prototype.process = function() {
 				});
 
 			default:
-				console.log('Unknown method' + method);
-				return Q.defer().reject({
+				var result = Q.defer();
+				result.reject({
 					error: 'Unknown method ' + method,
 					errorCode: 4
-				}).promise();
+				});
+				return result.promise;
 		}
 	})
 	.then(function(reply) {
