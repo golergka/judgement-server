@@ -150,12 +150,13 @@ Request.prototype.getExistingUser = function() {
 };
 
 Request.prototype.getUser = function() {
+	var that = this;
 	return this.getParameter('method')
 	.then(function(method) {
 		if (method === 'register') {
-			return this.registerUser();
+			return that.registerUser();
 		} else {
-			return this.getExistingUser();
+			return that.getExistingUser();
 		}
 	});
 };
