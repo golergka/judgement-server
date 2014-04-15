@@ -185,7 +185,7 @@ Request.prototype.process = function() {
 				return Question.findAll();
 
 			case 'register':
-				return that.register();
+				return that.registerUser();
 
 			default:
 				console.log('Unknown method' + method);
