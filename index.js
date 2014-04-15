@@ -187,6 +187,22 @@ Request.prototype.process = function() {
 			case 'register':
 				return that.registerUser();
 
+			case 'getAnswer':
+				return Q.all([
+					that.getUser(),
+					that.getParameter('questionId')
+				])
+				.spread(function(user, questionId) {
+					return Answer.find({
+						where: {
+							QuestionsId : questionId,
+							UserId		: user.id
+						},
+						order: 'updatedAt DESC',
+						limit: 1
+					});
+				});
+
 			default:
 				console.log('Unknown method' + method);
 				return Q.defer().reject({
