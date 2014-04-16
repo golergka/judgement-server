@@ -192,7 +192,8 @@ Request.prototype.getValidatedUser = function() {
 	return this.getParameter('method')
 	.then(function(method) {
 		if (method === 'register') {
-			return that.registerUser();
+			return that.getExistingValidatedUser()
+				.fail(that.registerUser);
 		} else {
 			return that.getExistingValidatedUser();
 		}
