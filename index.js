@@ -201,7 +201,7 @@ Request.prototype.process = function() {
 							QuestionId	: questionId,
 							UserId		: user.id
 						},
-						order: Sequelize.fn('max', Sequelize.col('updatedAt')),
+						order: '"updatedAt" DESC',
 						limit: 1
 					});
 				});
