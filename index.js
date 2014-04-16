@@ -71,21 +71,20 @@ Answer.belongsTo(User);
 User.hasMany(Answer);
 Answer.belongsTo(Question);
 
-// Test data
-Question.create({
-	text: "Will I live to be 26?",
-	date: new Date(2014, 6, 10)
-});
-
 // Syncing db
 
 Sequelize.db
-	.sync()
+	.sync({force: true})
 	.complete(function(err) {
 		if (!!err) {
 			console.log("Couldn't sync schemas: " + err);
 		} else {
 			console.log('Database schemas synced');
+			// Test data
+			Question.create({
+				text: "Will I live to be 26?",
+				date: new Date(2014, 6, 10)
+			});
 		}
 	});
 
@@ -123,11 +122,15 @@ Request.prototype.validateSignature = function() {
 };
 
 Request.prototype.registerUser = function() {
-	return this.getParameter('vendorIdHash')
-		.then(function(vendorIdHash) {
-			return User.create({
-				vendorIdHash: vendorIdHash
-			});
+	var that = this;
+	return that.getExistingValidatedUser()
+		.fail(function() {
+			return that.getParameter('vendorIdHash')
+				.then(function(vendorIdHash) {
+					return User.create({
+						vendorIdHash: vendorIdHash
+					});
+				});
 		});
 };
 
@@ -192,8 +195,7 @@ Request.prototype.getValidatedUser = function() {
 	return this.getParameter('method')
 	.then(function(method) {
 		if (method === 'register') {
-			return that.getExistingValidatedUser()
-				.fail(that.registerUser);
+			return that.registerUser();
 		} else {
 			return that.getExistingValidatedUser();
 		}
