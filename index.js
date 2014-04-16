@@ -33,6 +33,7 @@ nconf.defaults({
 //
 // Database
 //
+
 Sequelize.db = new Sequelize(
 	nconf.get('sequelize:database'),
 	nconf.get('sequelize:username'),
@@ -79,7 +80,7 @@ Question.create({
 // Syncing db
 
 Sequelize.db
-	.sync({force: true})
+	.sync()
 	.complete(function(err) {
 		if (!!err) {
 			console.log("Couldn't sync schemas: " + err);
@@ -89,8 +90,13 @@ Sequelize.db
 	});
 
 //
-// Starting server
+// Processing request
 //
+
+var RequestError = function(error, errorCode) {
+	this.error = error;
+	this.errorCode = errorCode;
+};
 
 function Request(path, params, res) {
 	this.path	= path;
@@ -102,10 +108,7 @@ Request.prototype.getParameter = function getParameter(paramName) {
 	var result = Q.defer();
 	var param = this.params[paramName];
 	if (!param) {
-		result.reject({
-			error: paramName + ' parameter required',
-			errorCode: 1
-		});
+		result.reject(new RequestError(paramName + ' parameter required', 1));
 	} else {
 		result.resolve(param);
 	}
@@ -142,10 +145,7 @@ Request.prototype.getExistingUser = function() {
 				return user;
 			} else {
 				var result = Q.defer();
-				result.reject({
-					error: "Can't find user",
-					errorCode: 3
-				});
+				result.reject(new RequestError("Can't find user", 3));
 				return result.promise;
 			}
 		});
@@ -164,7 +164,7 @@ Request.prototype.getUser = function() {
 };
 
 Request.prototype.reply = function(reply, code) {
-	console.log('replying: ' + reply);
+	console.log('replying: ' + JSON.stringify(reply) + ' code: ' + code);
 	this.res.writeHead(code, { 'Content-Type': 'application/json' });
 	this.res.end(JSON.stringify(reply));
 };
@@ -198,20 +198,17 @@ Request.prototype.process = function() {
 				.spread(function(user, questionId) {
 					return Answer.find({
 						where: {
-							QuestionsId : questionId,
+							QuestionId	: questionId,
 							UserId		: user.id
 						},
-						order: 'updatedAt DESC',
+						order: Sequelize.fn('max', Sequelize.col('updatedAt')),
 						limit: 1
 					});
 				});
 
 			default:
 				var result = Q.defer();
-				result.reject({
-					error: 'Unknown method ' + method,
-					errorCode: 4
-				});
+				result.reject(new RequestError ('Unknown method ' + method, 4));
 				return result.promise;
 		}
 	})
@@ -219,7 +216,12 @@ Request.prototype.process = function() {
 		that.replyOK(reply);
 	})
 	.fail(function(error) {
-		that.replyError(error);
+		if (error instanceof RequestError) {
+			that.replyError(error);
+		} else {
+			console.error(error.stack);
+			that.replyError(new RequestError('Internal error', 5));
+		}
 	});
 };
 
