@@ -151,6 +151,24 @@ Request.prototype.getExistingUser = function() {
 		});
 };
 
+Request.prototype.getQuestion = function() {
+	return this.getParameter('questionId')
+		.then(function(questionId){
+			return Question.find({
+				where: {id: questionId}
+			});
+		})
+		.then(function(question) {
+			if (!!question) {
+				return question;
+			} else {
+				var result = Q.defer();
+				result.reject(new RequestError("Can't find question", 3));
+				return result.promise;
+			}
+		});
+};
+
 Request.prototype.getUser = function() {
 	var that = this;
 	return this.getParameter('method')
@@ -179,7 +197,6 @@ Request.prototype.replyError = function(error) {
 
 Request.prototype.process = function() {
 	console.log('processing request: ' + this.path);
-	console.log('parameters:');
 	var that = this;
 	return that.getParameter('method')
 	.then(function(method) {
@@ -204,6 +221,22 @@ Request.prototype.process = function() {
 						order: '"updatedAt" DESC',
 						limit: 1
 					});
+				});
+
+			case 'answer':
+				return Q.all([
+					that.getUser(),
+					that.getQuestion(),
+					that.getParameter('answer')
+				])
+				.spread(function(user, question, answer) {
+					return Answer.create({value: !!answer})
+						.then(function(answer) {
+							return Q.all([
+								answer.setUser(user),
+								answer.setQuestion(question)
+							]);
+						});
 				});
 
 			default:
