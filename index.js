@@ -131,7 +131,7 @@ Request.prototype.registerUser = function() {
 		});
 };
 
-Request.prototype.getExistingUser = function() {
+Request.prototype.getExistingValidatedUser = function() {
 	return this.getParameter('vendorIdHash')
 		.then(function(vendorIdHash){
 			return User.find({
@@ -170,13 +170,31 @@ Request.prototype.getQuestion = function() {
 };
 
 Request.prototype.getUser = function() {
+	return this.getParameter('userId')
+		.then(function(userId) {
+			return User.find({
+				where: {id: userId}
+			});
+		})
+		.then(function(user) {
+			if (!!user) {
+				return user;
+			} else {
+				var result = Q.defer();
+				result.reject(new RequestError("Can't find user", 3));
+				return result.promise;
+			}
+		});
+};
+
+Request.prototype.getValidatedUser = function() {
 	var that = this;
 	return this.getParameter('method')
 	.then(function(method) {
 		if (method === 'register') {
 			return that.registerUser();
 		} else {
-			return that.getExistingUser();
+			return that.getExistingValidatedUser();
 		}
 	});
 };
@@ -218,14 +236,13 @@ Request.prototype.process = function() {
 							QuestionId	: questionId,
 							UserId		: user.id
 						},
-						order: '"updatedAt" DESC',
-						limit: 1
+						order: '"updatedAt" DESC'
 					});
 				});
 
 			case 'answer':
 				return Q.all([
-					that.getUser(),
+					that.getValidatedUser(),
 					that.getQuestion(),
 					that.getParameter('answer')
 				])
