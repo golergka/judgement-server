@@ -217,7 +217,7 @@ Request.prototype.replyError = function(error) {
 };
 
 Request.prototype.process = function() {
-	console.log('processing request: ' + this.path);
+	console.log('processing request: ' + JSON.stringify(this.params));
 	var that = this;
 	return that.getParameter('method')
 	.then(function(method) {
@@ -250,7 +250,7 @@ Request.prototype.process = function() {
 					that.getParameter('answer')
 				])
 				.spread(function(user, question, answer) {
-					return Answer.create({value: !!answer})
+					return Answer.create({value: !!JSON.parse(answer)})
 						.then(function(answer) {
 							return Q.all([
 								answer.setUser(user),
