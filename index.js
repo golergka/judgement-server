@@ -59,8 +59,8 @@ var User = Sequelize.db.define('User', {
 // Questions
 
 var Question = Sequelize.db.define('Question', {
-	text: Sequelize.STRING,
-	date: Sequelize.DATE
+	text:		Sequelize.STRING,
+	deadline:	Sequelize.DATE
 });
 
 // Answer
@@ -83,7 +83,7 @@ Sequelize.db
 			// Test data
 			Question.create({
 				text: "Will I live to be 26?",
-				date: new Date(2014, 6, 10)
+				deadline: new Date(2013, 6, 10)
 			});
 		}
 	});
@@ -250,13 +250,19 @@ Request.prototype.process = function() {
 					that.getParameter('answer')
 				])
 				.spread(function(user, question, answer) {
-					return Answer.create({value: !!JSON.parse(answer)})
-						.then(function(answer) {
-							return Q.all([
-								answer.setUser(user),
-								answer.setQuestion(question)
-							]);
-						});
+					if (answer.deadline > new Date()) {
+						return Answer.create({value: !!JSON.parse(answer)})
+							.then(function(answer) {
+								return Q.all([
+									answer.setUser(user),
+									answer.setQuestion(question)
+								]);
+							});
+					} else {
+						var result = Q.defer();
+						result.reject(new RequestError('Deadline for question has passed',5));
+						return result.promise;
+					}
 				});
 
 			default:
