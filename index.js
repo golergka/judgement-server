@@ -1,14 +1,13 @@
 /*jslint node: true */
 "use strict";
 
+require('./config');
+
 var url			= require("url"),
 	nconf		= require("nconf"),
 	express		= require("express"),
-	config		= require("./config"),
 	Request		= require("./request"),
 	storage		= require("./storage");
-
-config.run();
 
 storage.sync()
 	.then(function() {
