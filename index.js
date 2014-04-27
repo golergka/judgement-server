@@ -34,6 +34,11 @@ nconf.defaults({
 	}
 });
 
+// Heroku port configuration
+if (process.env.PORT) {
+	nconf.set('http:port', process.env.PORT);
+}
+
 // Reading heroku database configuration from env variable
 // http://sequelizejs.com/articles/heroku
 
