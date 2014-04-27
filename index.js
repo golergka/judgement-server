@@ -5,7 +5,8 @@ var	http		= require("http"),
 	url			= require("url"),
 	nconf		= require("nconf"),
 	Sequelize	= require("sequelize"),
-	Q			= require("q");
+	Q			= require("q"),
+	express		= require("express");
 
 //
 // Configuration
@@ -307,11 +308,14 @@ Request.prototype.process = function() {
 	});
 };
 
-var server = http.createServer(function(req,res) {
+// Launch server
+
+var app = express();
+
+app.use('/api', function(req,res,next) {
 	req.setEncoding('utf8');
 	var parsedUrl = url.parse(req.url, true);
 	var path = parsedUrl.pathname;
 	new Request(path, parsedUrl.query, res).process();
 });
-server.listen(nconf.get('http:port'));
-console.log("Listening on port " + nconf.get('http:port'));
+app.listen(nconf.get('http:port'));

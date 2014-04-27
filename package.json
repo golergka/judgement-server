@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "express": "^4.1.0",
+    "nconf": "~0.6.9",
     "pg": "~3.0.1",
     "q": "~1.0.1",
     "sequelize": "~1.7.0",
-    "nconf": "~0.6.9",
     "ursa": "~0.8.0"
   },
   "devDependencies": {},
