@@ -1,8 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-var	http		= require("http"),
-	url			= require("url"),
+var url			= require("url"),
 	nconf		= require("nconf"),
 	Sequelize	= require("sequelize"),
 	Q			= require("q"),
@@ -312,7 +311,7 @@ Request.prototype.process = function() {
 
 var app = express();
 
-app.use('/api', function(req,res,next) {
+app.use('/api', function(req,res) {
 	req.setEncoding('utf8');
 	var parsedUrl = url.parse(req.url, true);
 	var path = parsedUrl.pathname;
