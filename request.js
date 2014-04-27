@@ -1,7 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-var Q			= require('Q'),
+var Q			= require('q'),
 	storage		= require('./storage'),
 	User		= storage.User,
 	Question	= storage.Question,
