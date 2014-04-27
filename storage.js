@@ -47,15 +47,10 @@ exports.sync = function() {
 
 	return Q.all([
 			db.authenticate(),
-			db.sync({force: true})
+			db.sync()
 		])
 		.then(function() {
 			console.log('Database schemas synced');
-			// Test data
-			Question.create({
-				text: "Will I live to be 26?",
-				deadline: new Date(2013, 6, 10)
-			});
 		});
 
 };
