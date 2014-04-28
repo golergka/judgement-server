@@ -44,15 +44,31 @@ Answer.belongsTo(Question);
 
 exports.Answer = Answer;
 
-exports.sync = function() {
+exports.sync = function(test) {
 	console.log('Syncing storage...');
 
 	return Q.all([
 			db.authenticate(),
-			db.sync()
+			db.sync({ force: test })
 		])
 		.then(function() {
 			console.log('Database schemas synced');
+			if (test) {
+				return Q.All([
+					Question.Create({
+						text: "Will Sochi olimpics happen?",
+						deadline: new Date(2014,3,1),
+						answered: true,
+						rightAnswer: true
+					}),
+					Questions.Create({
+						text: "Will the summer be warm?",
+						deadline: new Date(2014,9,1),
+					})
+				]).then(function() {
+					console.log('Created test data');
+				});
+			}
 		});
 
 };

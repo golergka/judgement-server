@@ -9,7 +9,7 @@ var url			= require("url"),
 	Request		= require("./request"),
 	storage		= require("./storage");
 
-storage.sync()
+storage.sync(true)
 	.then(function() {
 		var app = express();
 
@@ -20,4 +20,8 @@ storage.sync()
 			new Request(path, parsedUrl.query, res).process();
 		});
 		app.listen(nconf.get('http:port'));
+	})
+	.fail(function(e) {
+		console.log('Failed to initialize');
+		console.log(e);
 	});
