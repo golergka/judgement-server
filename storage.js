@@ -55,13 +55,13 @@ exports.sync = function(test) {
 			console.log('Database schemas synced');
 			if (test) {
 				return Q.All([
-					Question.Create({
+					Question.create({
 						text: "Will Sochi olimpics happen?",
 						deadline: new Date(2014,3,1),
 						answered: true,
 						rightAnswer: true
 					}),
-					Questions.Create({
+					Question.create({
 						text: "Will the summer be warm?",
 						deadline: new Date(2014,9,1),
 					})
