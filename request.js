@@ -167,7 +167,7 @@ Request.prototype.process = function() {
 					that.getParameter('answer')
 				])
 				.spread(function(user, question, answer) {
-					if (answer.deadline > new Date()) {
+					if (question.deadline > new Date()) {
 						return Answer.create({value: !!JSON.parse(answer)})
 							.then(function(answer) {
 								return Q.all([
