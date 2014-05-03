@@ -130,6 +130,27 @@ Request.prototype.answer = function() {
 };
 
 Request.prototype.addQuestion = function() {
+	var that = this;
+	return Q.all([
+		that.getValidatedUser(),
+		that.getParameter('questionText'),
+		that.getParameter('questionDeadline')
+	])
+	.spread(function(user, questionText, questionDeadline) {
+		var deadline = JSON.parse(questionDeadline);
+		if (deadline < new Date()) {
+			var result = Q.defer();
+			result.reject(new RequestError("Deadline can't be in the past!",6));
+			return result.promise;
+		}
+		return Question.create({
+			text:		questionText,
+			deadline:	deadline
+		})
+		.then(function(question) {
+			return question.setUser(user);
+		});
+	});
 };
 
 Request.prototype.getUser = function() {
