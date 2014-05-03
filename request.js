@@ -88,6 +88,47 @@ Request.prototype.getQuestion = function() {
 		});
 };
 
+Request.prototype.getAnswer = function() {
+	var that = this;
+	return Q.all([
+		that.getUser(),
+		that.getParameter('questionId')
+	])
+	.spread(function(user, questionId) {
+		return Answer.find({
+			where: {
+				QuestionId	: questionId,
+				UserId		: user.id
+			},
+			order: '"updatedAt" DESC'
+		});
+	});
+};
+
+Request.prototype.answer = function() {
+	var that = this;
+	return Q.all([
+		that.getValidatedUser(),
+		that.getQuestion(),
+		that.getParameter('answer')
+	])
+	.spread(function(user, question, answer) {
+		if (question.deadline > new Date()) {
+			return Answer.create({value: !!JSON.parse(answer)})
+				.then(function(answer) {
+					return Q.all([
+						answer.setUser(user),
+						answer.setQuestion(question)
+					]);
+				});
+		} else {
+			var result = Q.defer();
+			result.reject(new RequestError('Deadline for question has passed',5));
+			return result.promise;
+		}
+	});
+};
+
 Request.prototype.getUser = function() {
 	return this.getParameter('userId')
 		.then(function(userId) {
@@ -145,41 +186,10 @@ Request.prototype.process = function() {
 				return that.registerUser();
 
 			case 'getAnswer':
-				return Q.all([
-					that.getUser(),
-					that.getParameter('questionId')
-				])
-				.spread(function(user, questionId) {
-					return Answer.find({
-						where: {
-							QuestionId	: questionId,
-							UserId		: user.id
-						},
-						order: '"updatedAt" DESC'
-					});
-				});
+				return that.getAnswer();
 
 			case 'answer':
-				return Q.all([
-					that.getValidatedUser(),
-					that.getQuestion(),
-					that.getParameter('answer')
-				])
-				.spread(function(user, question, answer) {
-					if (question.deadline > new Date()) {
-						return Answer.create({value: !!JSON.parse(answer)})
-							.then(function(answer) {
-								return Q.all([
-									answer.setUser(user),
-									answer.setQuestion(question)
-								]);
-							});
-					} else {
-						var result = Q.defer();
-						result.reject(new RequestError('Deadline for question has passed',5));
-						return result.promise;
-					}
-				});
+				return that.answer();
 
 			default:
 				var result = Q.defer();
