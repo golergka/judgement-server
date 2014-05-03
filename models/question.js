@@ -4,12 +4,15 @@
 require('../config');
 
 var Sequelize	= require('sequelize'),
-	storage		= require('../storage');
+	storage		= require('../storage'),
+	User		= require('./user');
 
-module.exports = storage.db.define('Question', {
+var Question = storage.db.define('Question', {
 	text:			Sequelize.STRING,
 	deadline:		Sequelize.DATE,
 	answered:		{ type: Sequelize.BOOLEAN, defaultValue: false},
 	rightAnswer:	{ type: Sequelize.BOOLEAN, defaultValue: false}
 });
+Question.belongsTo(User, {as: 'Author'});
 
+module.exports = Question;

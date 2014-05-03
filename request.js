@@ -129,6 +129,9 @@ Request.prototype.answer = function() {
 	});
 };
 
+Request.prototype.addQuestion = function() {
+};
+
 Request.prototype.getUser = function() {
 	return this.getParameter('userId')
 		.then(function(userId) {
@@ -190,6 +193,9 @@ Request.prototype.process = function() {
 
 			case 'answer':
 				return that.answer();
+
+			case 'addQuestion':
+				return that.addQuestion();
 
 			default:
 				var result = Q.defer();
