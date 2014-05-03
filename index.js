@@ -9,7 +9,7 @@ var url			= require("url"),
 	Request		= require("./request"),
 	storage		= require("./storage");
 
-storage.sync(true)
+storage.sync()
 	.then(function() {
 		var app = express();
 

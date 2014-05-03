@@ -16,59 +16,15 @@ var db = new Sequelize(
 
 exports.db = db;
 
-// Users
-
-var User = db.define('User', {
-	vendorIdHash:	Sequelize.STRING
-});
-exports.User = User;
-
-// Questions
-
-var Question = db.define('Question', {
-	text:			Sequelize.STRING,
-	deadline:		Sequelize.DATE,
-	answered:		{ type: Sequelize.BOOLEAN, defaultValue: false},
-	rightAnswer:	{ type: Sequelize.BOOLEAN, defaultValue: false}
-});
-
-exports.Question = Question;
-
-// Answer
-var Answer = db.define('Answer', {
-	value: Sequelize.BOOLEAN
-});
-Answer.belongsTo(User);
-User.hasMany(Answer);
-Answer.belongsTo(Question);
-
-exports.Answer = Answer;
-
-exports.sync = function(test) {
+exports.sync = function() {
 	console.log('Syncing storage...');
 
 	return Q.all([
 			db.authenticate(),
-			db.sync({ force: test })
+			db.sync()
 		])
 		.then(function() {
 			console.log('Database schemas synced');
-			if (test) {
-				return Q.all([
-					Question.create({
-						text: "Will Sochi olimpics happen?",
-						deadline: new Date(2014,3,1),
-						answered: true,
-						rightAnswer: true
-					}),
-					Question.create({
-						text: "Will the summer be warm?",
-						deadline: new Date(2014,9,1),
-					})
-				]).then(function() {
-					console.log('Created test data');
-				});
-			}
 		});
 
 };

@@ -2,10 +2,9 @@
 "use strict";
 
 var Q			= require('q'),
-	storage		= require('./storage'),
-	User		= storage.User,
-	Question	= storage.Question,
-	Answer		= storage.Answer;
+	User		= require('./models/user'),
+	Question	= require('./models/question'),
+	Answer		= require('./models/answer');
 
 var Request = function Request(path, params, res) {
 	this.path	= path;
