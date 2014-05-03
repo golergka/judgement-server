@@ -1,7 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-require('../config');
+require('../../config');
 
 var storage		= require('../storage'),
 	Sequelize	= require('sequelize');

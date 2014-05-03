@@ -1,7 +1,7 @@
 /*jslint node: true */
 "use strict";
 
-require('./config');
+require('../config');
 
 var Sequelize	= require('sequelize'),
 	nconf		= require('nconf'),

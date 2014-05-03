@@ -7,7 +7,7 @@ var url			= require("url"),
 	nconf		= require("nconf"),
 	express		= require("express"),
 	Request		= require("./request"),
-	storage		= require("./storage");
+	storage		= require("./database/storage");
 
 storage.sync()
 	.then(function() {
