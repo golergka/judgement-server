@@ -13,6 +13,6 @@ var Question = storage.db.define('Question', {
 	answered:		{ type: Sequelize.BOOLEAN, defaultValue: false},
 	rightAnswer:	{ type: Sequelize.BOOLEAN, defaultValue: false}
 });
-Question.belongsTo(User, {as: 'Author'});
+Question.belongsTo(User, {as: 'Author', foreignKey: 'AuthorId' });
 
 module.exports = Question;

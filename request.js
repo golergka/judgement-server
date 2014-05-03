@@ -137,7 +137,8 @@ Request.prototype.addQuestion = function() {
 		that.getParameter('questionDeadline')
 	])
 	.spread(function(user, questionText, questionDeadline) {
-		var deadline = JSON.parse(questionDeadline);
+		console.log('1');
+		var deadline = Date.parse(questionDeadline);
 		if (deadline < new Date()) {
 			var result = Q.defer();
 			result.reject(new RequestError("Deadline can't be in the past!",6));
@@ -145,10 +146,8 @@ Request.prototype.addQuestion = function() {
 		}
 		return Question.create({
 			text:		questionText,
-			deadline:	deadline
-		})
-		.then(function(question) {
-			return question.setUser(user);
+			deadline:	deadline,
+			author:		user
 		});
 	});
 };
