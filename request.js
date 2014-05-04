@@ -105,6 +105,17 @@ Request.prototype.getAnswer = function() {
 	});
 };
 
+Request.prototype.setFacebookAccessToken = function() {
+	var that = this;
+	return Q.all([
+		that.getValidatedUser(),
+		that.getParameter('facebookAccessToken')
+	])
+	.spread(function(user, token) {
+		return user.validateFacebookAccessToken(token);
+	});
+};
+
 Request.prototype.answer = function() {
 	var that = this;
 	return Q.all([
@@ -216,6 +227,9 @@ Request.prototype.process = function() {
 
 			case 'addQuestion':
 				return that.addQuestion();
+
+			case 'setFacebookAccessToken':
+				return that.setFacebookAccessToken();
 
 			default:
 				var result = Q.defer();
