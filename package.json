@@ -5,7 +5,6 @@
   "main": "index.js",
   "dependencies": {
     "express": "^4.1.0",
-    "fb": "^0.7.0",
     "nconf": "~0.6.9",
     "pg": "~3.0.1",
     "q": "~1.0.1",
