@@ -7,5 +7,6 @@ var storage		= require('../storage'),
 	Sequelize	= require('sequelize');
 
 module.exports = storage.db.define('User', {
-	vendorIdHash:	Sequelize.STRING
+	vendorIdHash:	Sequelize.STRING,
+	facebookId	:	Sequelize.STRING
 });
